@@ -1,0 +1,16 @@
+{
+		"title": "",
+		"children": {},
+
+		"source": {
+				"include": ["require.js"]
+		},
+
+		"opts": {
+				"encoding": "utf8",
+				"destination": "doc",
+				"recurse": false,
+				"tutorials": ".",
+				"private": true
+		}
+}
