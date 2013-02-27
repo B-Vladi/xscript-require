@@ -1,7 +1,7 @@
 Implementation require for XScript 1.1
 ===============
 
-За создание и инициализацию модуля отвечает конструктор [Module](/require.js#L37-L127).
+За создание и инициализацию модуля отвечает конструктор [Module](/xscript-require/blob/master/require.js#L37-L127).
 
 ### Фичи:
 
