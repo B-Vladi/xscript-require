@@ -5,9 +5,10 @@
  */
 
 /**
- * Пространство имен XJavaScript-модулей.
+ * Пространство имен XJS-модулей.
  * @name $XM
  * @namespace
+ * @see require
  */
 var $XM = {};
 
