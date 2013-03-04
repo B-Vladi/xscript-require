@@ -175,9 +175,9 @@ var require = (function () {
 			dir += '/';
 
 			while (true) {
-					if ($X.file.test(path)) {
+					if (xscript.file.test(path)) {
 							if (state === PATH_TO_PACKAGE) {
-									this.package = stripBOM($X.file.load(path));
+									this.package = stripBOM(xscript.file.load(path));
 
 									try {
 											this.package = JSON.parse(this.package);
@@ -193,7 +193,7 @@ var require = (function () {
 								 * @name Module#source
 								 * @type {string}
 								 */
-								this.source = stripBOM($X.file.load(path));
+								this.source = stripBOM(xscript.file.load(path));
 
 								/**
 								 * Путь к файлу модуля от docroot://.
