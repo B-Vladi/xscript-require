@@ -221,7 +221,10 @@ var require = (function () {
 							path = dir + namespace + '.' + require.extension;
 							state = PATH_TO_DIR;
 					} else {
-							throw 'Can`t find module: "' + path + '"';
+							throw {
+								name: 'RequireCantFindModuleInPath',
+								message: 'Can`t find module: "' + path + '"'
+							};
 					}
 			}
 	};
@@ -405,7 +408,13 @@ var require = (function () {
 
 								try {
 										module = new Module(require.path[index++], namespace);
-								} catch (e) {}
+								} catch (e) {
+									if (e.name === 'RequireCantFindModuleInPath') {
+										continue;
+									} else {
+										throw e;
+									}
+								}
 						}
 
 						if (module) {
