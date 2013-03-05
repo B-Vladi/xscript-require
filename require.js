@@ -1,7 +1,7 @@
 /**
  * @file Implementation require for XScript.
  * @author Vlad Kurkin, b-vladi@yandex-team.ru
- * @version 1.1
+ * @version 1.2
  * @license <a href="https://github.com/appendto/amplify/blob/master/MIT-LICENSE.txt">MIT</a>
  */
 
@@ -9,7 +9,7 @@
  * Пространство имен XJS-модулей.
  * @name $XM
  * @namespace
- * @see require
+ * @see {@link require}
  */
 var $XM = {};
 
@@ -65,7 +65,10 @@ var require = (function () {
 			/**
 			 * Функция загрузки модуля, аналогична {@link require}.
 			 * @name Module#require
+			 * @param {string} namespace.
+			 * @return {Module#exports}.
 			 * @method
+			 * @see {@link require}
 			 */
 			this.require = new Require(this);
 
@@ -227,6 +230,7 @@ var require = (function () {
 	 * Компилирует модуль. В глобальной области видимости модуля доступны следующие переменные:
 	 * <pre>
 	 * <b>module</b> - ссылка на объект модуля.
+	 * <b>exports</b> - ссылка на объект {@link Module#exports}.
 	 * <b>require</b> - ссылка на метод {@link Module#require}.
 	 * <b>basedir</b> - значение ссвойства {@link Module#basedir}.
 	 * </pre>
@@ -236,8 +240,8 @@ var require = (function () {
 	 * @method
 	 */
 	Module.prototype.compile = function () {
-			new Function('module', 'require', 'basedir', this.source)
-				.call(this.exports, this, this.require, this.basedir);
+			new Function('module', 'exports', 'require', 'basedir', this.source)
+				.call(this.exports, this, this.exports, this.require, this.basedir);
 
 			return this;
 	};
