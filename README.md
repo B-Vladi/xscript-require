@@ -1,6 +1,6 @@
 Implementation require for XScript
 ===============
-### Version: 1.2
+### Version: 1.3
 
 ### Lisence: [MIT](https://github.com/appendto/amplify/blob/master/MIT-LICENSE.txt)
 
@@ -11,3 +11,5 @@ Implementation require for XScript
 * Поддерживает уровни переопределения и наследование модулей через {@link require}.path.
 
 За создание и инициализацию модуля отвечает конструктор {@link Module}.
+
+Документация в формате JSDoc 3, сборка относительно корня: `path/to/jsdoc/tool -c conf.json`.
