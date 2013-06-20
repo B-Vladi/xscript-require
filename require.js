@@ -178,10 +178,10 @@ var require = (function () {
 		dir += '/';
 
 		while (true) {
-			if ($X.file.test(path)) {
+			if (require.file.test(path)) {
 				if (state === PATH_TO_PACKAGE) {
 					try {
-						this.package = JSON.parse(stripBOM($X.file.load(path)));
+						this.package = JSON.parse(stripBOM(require.file.load(path)));
 					} catch (error) {
 						throw 'Can`t parse .json file: "' + path + '"';
 					}
@@ -194,7 +194,7 @@ var require = (function () {
 					 * @name Module#source
 					 * @type {String}
 					 */
-					this.source = stripBOM($X.file.load(path));
+					this.source = stripBOM(require.file.load(path));
 
 					/**
 					 * Путь к файлу модуля от docroot://.
@@ -287,6 +287,7 @@ var require = (function () {
 	 * @property {Array} path Массив путей с директориями, в которых будут искаться файлы модулей. Каждый путь представляет собой уровень переопределения, выстраивающий соответствующую цепочку наследования модулей из одного пространства имен.
 	 * @property {String} [extension='js'] Расширение файлов модулей. См {@link Module#load}.
 	 * @property {String} [packageName='package.json'] Имя JSON-файла, содержащий информацию о модуле. См {@link Module#load}.
+	 * @property {object} [file=xscript.file] Объект с методами доступа к файловой системе.
 	 * @property {Object} prototype Общий прототип объектов API модулей ({@link Module#exports}).
 	 * @example
 	 * // Загрузка модуля из разных уровней переопределения
@@ -428,6 +429,7 @@ var require = (function () {
 	Require.path = [];
 	Require.extension = 'js';
 	Require.packageName = 'package.json';
+	Require.file = $X.file;
 	Require.prototype = Exports.prototype;
 
 	return Require;
