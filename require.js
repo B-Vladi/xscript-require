@@ -1,7 +1,7 @@
 /**
  * @file Implementation require for XScript.
  * @author Vlad Kurkin, b-vladi@yandex-team.ru
- * @version 1.3
+ * @version 1.4
  * @license <a href="https://github.com/appendto/amplify/blob/master/MIT-LICENSE.txt">MIT</a>
  */
 
@@ -16,8 +16,8 @@ var $XM = {};
 var require = (function () {
 	//noinspection JSHint, JSUnresolvedVariable
 	var
-		$X = xscript,
 		CACHE = {},
+		CANT_FIND_ERR_NAME = 'RequireCantFindModuleInPath',
 		parent = null;
 
 	function requireFactory(module) {
@@ -29,6 +29,7 @@ var require = (function () {
 		Wrapper.path = Require.path;
 		Wrapper.extension = Require.extension;
 		Wrapper.packageName = Require.packageName;
+		Wrapper.file = Require.file;
 		Wrapper.prototype = Require.prototype;
 
 		return Wrapper;
@@ -51,11 +52,11 @@ var require = (function () {
 		 *  +source
 		 *  +path
 		 *  +basedir
-		 *  --Load as namespace--
+		 *  --Load as module--
 		 *  +namespace
-		 *  ..Load from package.json..
+		 *  .....from package.json..
 		 *  +package
-		 *  --Load as component--
+		 *  --Load as submodule--
 		 *  +parent
 		 *  --
 		 *  #require(namespace)
@@ -115,11 +116,11 @@ var require = (function () {
 		 * @default null
 		 * @type {Module}
 		 * @example
-		 * // Загрузка компонента из модуля
+		 * // Загрузка подмодуля
 		 * this.foo = 'bar';
-		 * var component = require(basedir + 'component.js');
+		 * var submodule = require(basedir + 'submodule.js');
 		 *
-		 * // Доступ к API родителя из component.js
+		 * // Доступ к API родителя из submodule.js
 		 * module.parent.exports.foo // bar
 		 */
 		this.parent = typeof namespace === 'string' ? null : parent;
@@ -220,7 +221,7 @@ var require = (function () {
 				state = PATH_TO_DIR;
 			} else {
 				throw {
-					name: 'RequireCantFindModuleInPath',
+					name: CANT_FIND_ERR_NAME,
 					message: 'Can`t find module: "' + path + '", paths: ' + Require.path
 				};
 			}
@@ -308,7 +309,7 @@ var require = (function () {
 	 * else
 	 *   -r-> [false] if "" then
 	 *     note top: Start with\n'docroot://'?
-	 *     -r-> [true] "Component"
+	 *     -r-> [true] "Submodule"
 	 *   else
 	 *     -r-> [false] "Iterating of paths"
 	 *   endif
@@ -317,7 +318,7 @@ var require = (function () {
 	 * "Save module in cache" as SaveInCache -l-> Return
 	 * -d-> (*)
 
-	 * partition "Modules" {
+	 * partition "Module" {
 		 *   partition "Iterating of paths" {
 		 *     "Resolve path" -r-> "Load Module"
 		 *     -r-> "Compile" as Compile1
@@ -326,7 +327,7 @@ var require = (function () {
 		 *   "Create namespace" --> SaveInCache
 		 * }
 
-	 * partition "Component" {
+	 * partition "Submodule" {
 		 *   "Load file from\n<b>namespace</b>" -r-> "Set parent module"
 		 *   -r-> "Compile" as Compile2
 		 *   --> SaveInCache
@@ -408,7 +409,7 @@ var require = (function () {
 				try {
 					module = new Module(Require.path[index++], namespace);
 				} catch (e) {
-					if (e.name !== 'RequireCantFindModuleInPath') {
+					if (e.name !== CANT_FIND_ERR_NAME) {
 						throw e;
 					}
 				}
@@ -429,7 +430,7 @@ var require = (function () {
 	Require.path = [];
 	Require.extension = 'js';
 	Require.packageName = 'package.json';
-	Require.file = $X.file;
+	Require.file = xscript.file;
 	Require.prototype = Exports.prototype;
 
 	return Require;
