@@ -1,6 +1,6 @@
 Implementation require for XScript
 ===============
-### Version: 1.3
+### Version: 1.4
 
 ### Lisence: [MIT](https://github.com/appendto/amplify/blob/master/MIT-LICENSE.txt)
 
