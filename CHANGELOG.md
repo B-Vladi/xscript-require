@@ -1,3 +1,5 @@
+###v1.5
+    Fixed error handling.
 ###v1.4
     Added static property "file" in the require function.
 ###v1.3
