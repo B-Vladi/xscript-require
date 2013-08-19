@@ -13,6 +13,30 @@
  */
 var $XM = {};
 
+/**
+ * Implementation require for XScript. See {@tutorial README}.
+ * @function
+ * @param {String} namespace Пространство имен модуля или абсолютный путь к JS-файлу. В последнем случае require воспринимает это как обращение к компоненту модуля (см. диаграмму алгоритма работы в исходниках).
+ * @tutorial README
+ * @namespace require
+ * @global
+ * @return {Object} Внешнее API модуля. См {@link Module#exports}.
+ * @property {Array} path Массив путей с директориями, в которых будут искаться файлы модулей. Каждый путь представляет собой уровень переопределения, выстраивающий соответствующую цепочку наследования модулей из одного пространства имен.
+ * @property {String} [extension='js'] Расширение файлов модулей. См {@link Module#load}.
+ * @property {String} [packageName='package.json'] Имя JSON-файла, содержащий информацию о модуле. См {@link Module#load}.
+ * @property {object} [file=xscript.file] Объект с методами доступа к файловой системе.
+ * @property {Object} prototype Общий прототип объектов API модулей ({@link Module#exports}).
+ * @example
+ * // Загрузка модуля из разных уровней переопределения
+ * require.path = ['/path/to/first/dir/', 'path/to/second/dir'];
+ * require('names.space');
+ * // В этом случае объект API модуля, загруженного из файла "path/to/second/dir/names.space.js" будет наследовать от API модуля, загруженного из "/path/to/first/dir/names.space.js".
+ *
+ * // Доступ к модулям из пространства имен
+ * require('some.name.space');
+ * $XM.some.name.space; // объект {@link Module#exports}.
+ */
+
 var require = (function () {
     //noinspection JSHint, JSUnresolvedVariable
     var
@@ -282,114 +306,6 @@ var require = (function () {
         }
     }
 
-    /**
-     * Implementation require for XScript. See {@tutorial README}.
-     * @tutorial README
-     * @param {String} namespace Пространство имен модуля или абсолютный путь к JS-файлу. В последнем случае require воспринимает это как обращение к компоненту модуля (см. диаграмму алгоритма работы в исходниках).
-     * @namespace require
-     * @function
-     * @return {Object} Внешнее API модуля. См {@link Module#exports}.
-     * @property {Array} path Массив путей с директориями, в которых будут искаться файлы модулей. Каждый путь представляет собой уровень переопределения, выстраивающий соответствующую цепочку наследования модулей из одного пространства имен.
-     * @property {String} [extension='js'] Расширение файлов модулей. См {@link Module#load}.
-     * @property {String} [packageName='package.json'] Имя JSON-файла, содержащий информацию о модуле. См {@link Module#load}.
-     * @property {object} [file=xscript.file] Объект с методами доступа к файловой системе.
-     * @property {Object} prototype Общий прототип объектов API модулей ({@link Module#exports}).
-     * @example
-     * // Загрузка модуля из разных уровней переопределения
-     * require.path = ['/path/to/first/dir/', 'path/to/second/dir'];
-     * require('names.space');
-     * // В этом случае объект API модуля, загруженного из файла "path/to/second/dir/names.space.js" будет наследовать от API модуля, загруженного из "/path/to/first/dir/names.space.js".
-     *
-     * // Доступ к модулям из пространства имен
-     * require('some.name.space');
-     * $XM.some.name.space; // объект {@link Module#exports}.
-     *
-     * @startuml
-     * title Алгоритм работы require()
-     * note top: require(namespace);
-     * (*) -d-> if "" then
-     *   note left: The module\nis in the cache??
-     *   --> [true] "Return module" as Return
-     * else
-     *   -r-> [false] if "" then
-     *     note top: Start with\n'docroot://'?
-     *     -r-> [true] "Submodule"
-     *   else
-     *     -r-> [false] "Iterating of paths"
-     *   endif
-     * endif
-
-     * "Save module in cache" as SaveInCache -l-> Return
-     * -d-> (*)
-
-     * partition "Module" {
-         *   partition "Iterating of paths" {
-         *     "Resolve path" -r-> "Load Module"
-         *     -r-> "Compile" as Compile1
-         *   }
-
-         *   "Create namespace" --> SaveInCache
-         * }
-
-     * partition "Submodule" {
-         *   "Load file from\n<b>namespace</b>" -r-> "Set parent module"
-         *   -r-> "Compile" as Compile2
-         *   --> SaveInCache
-         * }
-     * @enduml
-
-     * @startuml
-     * title Пример наследования API модулей, загруженных из разных уровней переопределения.
-
-     * object Exports.prototype {
-         * }
-
-     * package "Level override 1" #DFDFDF-ffffff {
-         *   object "$XM.user.settings" as Settings_1 << (E,orchid) >> {
-         *     +someMethod1()
-         *     +someMethod2()
-         *   }
-
-         *   object "$XM.geo" as Geo_1 << (E,orchid) >> {
-         *     +someField1 = someValue
-         *   }
-         * }
-     *
-     * package "Level override 2" #DFDFDF-ffffff {
-         *   object "$XM.user.settings" as Settings_2 << (E,orchid) >> {
-         *     +someMethod3()
-         *   }
-         *
-         *   object "$XM.geo" as Geo_2 << (E,orchid) >> {
-         *     +someField2 = someValue
-         *   }
-         * }
-     *
-     * Exports.prototype <-- Settings_1
-     * Exports.prototype <-- Geo_1
-     *
-     * Settings_1 <-- Settings_2
-     * Geo_1 .. Geo_2
-     *
-     * note top of Geo_1
-     *   this.someField1 = someValue;
-     * end note
-     *
-     * note top of Settings_1
-     *   this.someMethod1 = function () {};
-     *   this.someMethod2 = function () {};
-     * end note
-     *
-     * note bottom of Geo_2
-     *   module.exports = {someField2: someValue};
-     * end note
-     *
-     * note bottom of Settings_2
-     *   this.someMethod3 = function () {};
-     *   module.exports.someMethod3 = function () {};
-     * end note
-     * @enduml
-     */
     function Require(namespace) {
         var
           module = null,
@@ -449,3 +365,91 @@ var require = (function () {
 
     return Require;
 }());
+
+
+/* @startuml
+ * title Алгоритм работы require()
+ * note top: require(namespace);
+ * (*) -d-> if "" then
+ *   note left: The module\nis in the cache??
+ *   --> [true] "Return module" as Return
+ * else
+ *   -r-> [false] if "" then
+ *     note top: Start with\n'docroot://'?
+ *     -r-> [true] "Submodule"
+ *   else
+ *     -r-> [false] "Iterating of paths"
+ *   endif
+ * endif
+
+ * "Save module in cache" as SaveInCache -l-> Return
+ * -d-> (*)
+
+ * partition "Module" {
+ *   partition "Iterating of paths" {
+ *     "Resolve path" -r-> "Load Module"
+ *     -r-> "Compile" as Compile1
+ *   }
+
+ *   "Create namespace" --> SaveInCache
+ * }
+
+ * partition "Submodule" {
+ *   "Load file from\n<b>namespace</b>" -r-> "Set parent module"
+ *   -r-> "Compile" as Compile2
+ *   --> SaveInCache
+ * }
+ * @enduml
+
+ * @startuml
+ * title Пример наследования API модулей, загруженных из разных уровней переопределения.
+
+ * object Exports.prototype {
+ * }
+
+ * package "Level override 1" #DFDFDF-ffffff {
+ *   object "$XM.user.settings" as Settings_1 << (E,orchid) >> {
+ *     +someMethod1()
+ *     +someMethod2()
+ *   }
+
+ *   object "$XM.geo" as Geo_1 << (E,orchid) >> {
+ *     +someField1 = someValue
+ *   }
+ * }
+ *
+ * package "Level override 2" #DFDFDF-ffffff {
+ *   object "$XM.user.settings" as Settings_2 << (E,orchid) >> {
+ *     +someMethod3()
+ *   }
+ *
+ *   object "$XM.geo" as Geo_2 << (E,orchid) >> {
+ *     +someField2 = someValue
+ *   }
+ * }
+ *
+ * Exports.prototype <-- Settings_1
+ * Exports.prototype <-- Geo_1
+ *
+ * Settings_1 <-- Settings_2
+ * Geo_1 .. Geo_2
+ *
+ * note top of Geo_1
+ *   this.someField1 = someValue;
+ * end note
+ *
+ * note top of Settings_1
+ *   this.someMethod1 = function () {};
+ *   this.someMethod2 = function () {};
+ * end note
+ *
+ * note bottom of Geo_2
+ *   module.exports = {someField2: someValue};
+ * end note
+ *
+ * note bottom of Settings_2
+ *   this.someMethod3 = function () {};
+ *   module.exports.someMethod3 = function () {};
+ * end note
+ * @enduml
+ */
