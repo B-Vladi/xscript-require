@@ -1,3 +1,5 @@
+###v1.6
+    Added support for the work in client-side. Minor fixes.
 ###v1.5
     Fixed error handling.
 ###v1.4
