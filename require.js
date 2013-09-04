@@ -6,38 +6,38 @@
  */
 
 /**
- * Пространство имен XJS-модулей.
+ * Глобальное пространство имен CommonJS-модулей.
  * @namespace $XM
  * @see require
  */
 var $XM = {};
 
 /**
- * @description Implementation require for XScript and client-side. See {@tutorial README}.
+ * @description Кастомная реализация функции require для CommonJS-модулей с поддержкой окружений XScript и Client-side. See {@tutorial README}.
  * <br />Алгоритм работы require:
  * <br /><img src="../uml/Work.png" />
  * <br />Схема наследования модулей:
  * <br /><img src="../uml/Inherit.png" />
- * @param {String} namespace Пространство имен модуля или путь к JavaScript-файлу. Пространство имен представляет собой строку имён, разделённых точкой. Имя должно начинаться с буквы, затем могут идти символы латинского алфавита и знаки "-_". В случае передачи пути, require воспринимает это как обращение к подмодулю (см. диаграмму алгоритма работы в исходниках), инициализируя свойство {@link Module#parent}.
+ * @param {String} namespace Пространство имен модуля или путь к JavaScript-файлу. Пространство имен представляет собой строку имён, разделённых точкой. Имя должно начинаться с буквы, затем могут идти символы латинского алфавита, а так же знаки "-" и "_". Если переданный аргумент не является пространством имен, он воспринимается как путь к файлу, по которому следует загрузить модуль.
  * @tutorial README
  * @function require
  * @global
  * @return {Object} Объект {@link Module#exports}.
- * @property {Array} [path=[]] Массив путей с директориями, в которых будут искаться файлы модулей на серверной стороне. Каждый путь представляет собой уровень переопределения, выстраивающий соответствующую цепочку наследования модулей из одного пространства имен.
- * @property {String} [extension='js'] Расширение файлов модулей. См {@link Module#load}.
- * @property {String} [packageName='package.json'] Имя JSON-файла, содержащий информацию о модуле. См {@link Module#load}.
- * @property {Object} [file=xscript.file] Объект с методами доступа к файловой системе. Существует только на серверной стороне.
- * @property {Object} prototype Общий прототип объектов API модулей ({@link Module#exports}).
- * @property {Function} define(namespace,wrapper) Регистрирует модуль по указанному namespace в первом параметре. Вторым параметром должена быть функция, которая принимает 4 аргумента (см. {@link Module#compile}) и содержит в себе тело модуля. Вызов метода require.define не инициализирует модуль (функция wrapper не вызывается). Инициализация происходит в момент первого обращения к модулю через вызов require. Все аргументы обязательны.
+ * @property {Array} [path=[]] Массив путей с директориями, в которых будут искаться файлы модулей на серверной стороне. Каждый путь представляет собой уровень переопределения, выстраивающий соответствующую цепочку наследования модулей из одного пространства имен (см. схему наследования).
+ * @property {String} [extension='js'] Расширение файлов модулей. Подробнее: {@link Module#load}.
+ * @property {String} [packageName='package.json'] Имя JSON-файла, содержащий информацию о модуле. В данный момент используется только свойство main. Подробнее: {@link Module#load}.
+ * @property {Object} [file=xscript.file] API XScript-а для работы с файловой системой. Существует только на серверной стороне.
+ * @property {Object} prototype Общий прототип объектов ({@link Module#exports}) (см. схему наследования).
+ * @property {Function} define(namespace,wrapper) Регистрирует модуль по указанному пространству имен в первом параметре. Вторым параметром должена быть функция, которая принимает 4 аргумента (см. {@link Module#compile}) и содержит в себе тело модуля. Вызов метода {@link require}.define не инициализирует модуль (функция wrapper не вызывается). Инициализация происходит в момент первого обращения к модулю через вызов require. Все аргументы обязательны.
  * @throws {RequireError} Ошибка получения модуля.
  * @example
  * // Загрузка модуля из разных уровней переопределения:
  * require.path = ['/path/to/first/dir/', './path/to/second/dir'];
  * require('name.space');
- * // В этом случае объект API модуля, загруженного из файла "path/to/second/dir/names.space.js"
- * // будет наследовать от API модуля, загруженного из "/path/to/first/dir/names.space.js".
+ * // В этом случае объект {@link Module#exports}, из модуля "path/to/second/dir/names.space.js",
+ * // будет наследовать от объекта {@link Module#exports}, из модуля "/path/to/first/dir/names.space.js".
  *
- * // Доступ к модулям из пространства имен:
+ * // Доступ к модулям из глобального пространства имен:
  * require('some.name.space');
  * $XM.some.name.space; // объект {@link Module#exports}.
  *
@@ -124,7 +124,7 @@ var require = (function () {
     }
 
     /**
-     * Конструктор объекта модуля.
+     * Конструктор объекта модуля. Структура создаваемых экземпляров отличается от спецификации CommonJS.
      * @summary <img src="../uml/Module.png" alt="" />
      * @name Module
      * @constructor
@@ -143,7 +143,7 @@ var require = (function () {
         this.require = requireFactory(this);
 
         /**
-         * Реализация модуля, являющаяся его внешним API. По-умолчанию этот объект наследует от {@link Module#prototype}. Для того, что бы разорвать наследование между уровнями переопределения, достаточно заменить значение этого свойства (см. диаграмму с примером наследования в исходниках).
+         * Реализация модуля, являющаяся его внешним API. По-умолчанию этот объект наследует от {@link Module#prototype}. Для того, что бы разорвать наследование между уровнями переопределения, достаточно заменить значение этого свойства (см. диаграмму наследования).
          * @name Module#exports
          * @type {Object}
          */
@@ -157,9 +157,9 @@ var require = (function () {
          * // Исходный код модуля, находящегося на втором уровне переопределения.
          * // Перекрытие наследуемого метода.
          * this.log = function (string) {
-             *   // Вызов исходного метода
-             *   return module.prototype.log('[LOG]: ' + string);
-             * }
+         *   // Вызов исходного метода
+         *   return module.prototype.log('[LOG]: ' + string);
+         * }
          */
         this.prototype = Exports.prototype;
 
@@ -250,7 +250,7 @@ var require = (function () {
      * <ol>
      *   <li>Ищется папка с именем пространства имён.</li>
      *   <li>Если папка найдена, в ней ищется JSON-файл с именем, указанным в {@link require}.packageName.</li>
-     *   <li>Если JSON-файл найден и в нем определено свойство main с именем входного файла, ищется указанный файл в текущей папке</li>
+     *   <li>Если JSON-файл найден и в нем определено свойство main с именем входного файла, ищется указанный файл в текущей папке.</li>
      *   <li>Если JSON-файл отсутствует, в текущей папке ищется файл, имя которого совпадает с пространством имен модуля с расширением, указанным в {@link require}.extension.</li>
      * </ol>
      * Если пространство имен не указано, код загружается по указанному пути.
@@ -536,9 +536,6 @@ var require = (function () {
  * object require.prototype {
  * }
  *
- * object Exports.prototype {
- * }
- *
  * package "path/to/first/dir" #DFDFDF-ffffff {
  *   object "user.settings" as Settings_1 << (E,orchid) >> {
  *     +someMethod1()
@@ -560,10 +557,8 @@ var require = (function () {
  *   }
  * }
  *
- * Exports.prototype <-- Settings_1
- * Exports.prototype <-- Geo_1
- *
- * require.prototype <-- Exports.prototype
+ * require.prototype <-- Settings_1
+ * require.prototype <-- Geo_1
  *
  * Settings_1 <-- Settings_2
  * Geo_1 .. Geo_2
@@ -599,23 +594,23 @@ var require = (function () {
  *
  * PathToDir -d-> if "" then
  *     note right: Found?
- *   --> [<b>true</b>\n<i>path = dir + Require.packageName</i>] "<b>PATH_TO_PACKAGE</b>\nПоиск JSON-файла <i>path</i>" as PathToPackage
+ *   --> [<b>true</b>\n<i>path = dir + require.packageName</i>] "<b>PATH_TO_PACKAGE</b>\nПоиск JSON-файла <i>path</i>" as PathToPackage
  *   else
- *   --> [<b>false</b>\n<i>path = dir + '.' + Require.extension</i>] PathToFile
+ *   --> [<b>false</b>\n<i>path = dir + '.' + require.extension</i>] PathToFile
  * endif
  *
  * PathToPackage --> if "" then
  *   note right: Found?
  *   --> [<b>true</b>\n<i>path = dir + '/' + package.main</i>] "<b>PATH_TO_MAIN</b>\nПоиск входного файла модуля <i>path</i>" as PathToMain
  *   else
- *   -l-> [<b>false</b>\n<i>path = dir + '/' + namespace + '.' + Require.extension</i>] PathToFile
+ *   -l-> [<b>false</b>\n<i>path = dir + '/' + namespace + '.' + require.extension</i>] PathToFile
  * endif
  *
  * PathToMain --> if "" then
  *   note right: Found?
  *   -l-> [<b>true</b>] "Загрузка файла из <i>path</i>" as Load
  *   else
- *   --> [<b>false</b>\n<i>Can`t find main file</i>] RequireError
+ *   --> [<b>false</b>\n<i>Can`t find main file</i>] "<i>throw RequireError</i>" as RequireError
  * endif
  *
  * PathToFile -d-> if "" then

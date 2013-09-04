@@ -48,8 +48,8 @@
 <dd>
 
 <div class="description">
-    Implementation require for XScript and client-side. See <a href="tutorial-README.html">README</a>. <br />Алгоритм работы require:
-    <br /><img src="../uml/Work.png" /> <br />Схема наследования модулей: <br /><img src="../uml/Inherit.png" />
+    Кастомная реализация функции require для CommonJS-модулей с поддержкой окружений XScript и Client-side. See <a href="tutorial-README.html">README</a>.
+    <br />Алгоритм работы require: <br /><img src="../uml/Work.png" /> <br />Схема наследования модулей: <br /><img src="../uml/Inherit.png" />
 </div>
 
 <h5>Parameters:</h5>
@@ -78,9 +78,7 @@
 
         </td>
 
-        <td class="description last">Пространство имен модуля или путь к JavaScript-файлу. Пространство имен представляет собой строку имён, разделённых точкой. Имя должно начинаться с буквы, затем могут идти символы латинского алфавита и знаки "-_". В случае передачи пути, require воспринимает это как обращение к подмодулю (см. диаграмму алгоритма работы в исходниках), инициализируя свойство
-            <a href="Module.html#parent">Module#parent</a>.
-        </td>
+        <td class="description last">Пространство имен модуля или путь к JavaScript-файлу. Пространство имен представляет собой строку имён, разделённых точкой. Имя должно начинаться с буквы, затем могут идти символы латинского алфавита, а так же знаки "-" и "_". Если переданный аргумент не является пространством имен, он воспринимается как путь к файлу, по которому следует загрузить модуль.</td>
     </tr>
 
     </tbody>
@@ -132,7 +130,7 @@
 
     </td>
 
-    <td class="description last">Массив путей с директориями, в которых будут искаться файлы модулей на серверной стороне. Каждый путь представляет собой уровень переопределения, выстраивающий соответствующую цепочку наследования модулей из одного пространства имен.</td>
+    <td class="description last">Массив путей с директориями, в которых будут искаться файлы модулей на серверной стороне. Каждый путь представляет собой уровень переопределения, выстраивающий соответствующую цепочку наследования модулей из одного пространства имен (см. схему наследования).</td>
 </tr>
 
 <tr>
@@ -157,7 +155,7 @@
 
     </td>
 
-    <td class="description last">Расширение файлов модулей. См <a href="Module.html#load">Module#load</a>.</td>
+    <td class="description last">Расширение файлов модулей. Подробнее: <a href="Module.html#load">Module#load</a>.</td>
 </tr>
 
 <tr>
@@ -182,7 +180,9 @@
 
     </td>
 
-    <td class="description last">Имя JSON-файла, содержащий информацию о модуле. См <a href="Module.html#load">Module#load</a>.</td>
+    <td class="description last">Имя JSON-файла, содержащий информацию о модуле. В данный момент используется только свойство main. Подробнее:
+        <a href="Module.html#load">Module#load</a>.
+    </td>
 </tr>
 
 <tr>
@@ -207,7 +207,7 @@
 
     </td>
 
-    <td class="description last">Объект с методами доступа к файловой системе. Существует только на серверной стороне.</td>
+    <td class="description last">API XScript-а для работы с файловой системой. Существует только на серверной стороне.</td>
 </tr>
 
 <tr>
@@ -228,7 +228,7 @@
 
     </td>
 
-    <td class="description last">Общий прототип объектов API модулей (<a href="Module.html#exports">Module#exports</a>).</td>
+    <td class="description last">Общий прототип объектов (<a href="Module.html#exports">Module#exports</a>) (см. схему наследования).</td>
 </tr>
 
 <tr>
@@ -249,8 +249,9 @@
 
     </td>
 
-    <td class="description last">Регистрирует модуль по указанному namespace в первом параметре. Вторым параметром должена быть функция, которая принимает 4 аргумента (см.
-        <a href="Module.html#compile">Module#compile</a>) и содержит в себе тело модуля. Вызов метода require.define не инициализирует модуль (функция wrapper не вызывается). Инициализация происходит в момент первого обращения к модулю через вызов require. Все аргументы обязательны.
+    <td class="description last">Регистрирует модуль по указанному пространству имен в первом параметре. Вторым параметром должена быть функция, которая принимает 4 аргумента (см.
+        <a href="Module.html#compile">Module#compile</a>) и содержит в себе тело модуля. Вызов метода
+        <a href="global.html#require">require</a>.define не инициализирует модуль (функция wrapper не вызывается). Инициализация происходит в момент первого обращения к модулю через вызов require. Все аргументы обязательны.
     </td>
 </tr>
 
@@ -317,9 +318,12 @@
 
 <h5>Example</h5>
 
-    <pre class="prettyprint"><code>// Загрузка модуля из разных уровней переопределения: require.path = ['/path/to/first/dir/', './path/to/second/dir']; require('name.space'); // В этом случае объект API модуля, загруженного из файла "path/to/second/dir/names.space.js" // будет наследовать от API модуля, загруженного из "/path/to/first/dir/names.space.js".
+    <pre class="prettyprint"><code>// Загрузка модуля из разных уровней переопределения: require.path = ['/path/to/first/dir/', './path/to/second/dir']; require('name.space'); // В этом случае объект
+        <a href="Module.html#exports">Module#exports</a>, из модуля "path/to/second/dir/names.space.js", // будет наследовать от объекта
+        <a href="Module.html#exports">Module#exports</a>, из модуля "/path/to/first/dir/names.space.js".
 
-        // Доступ к модулям из пространства имен: require('some.name.space'); $XM.some.name.space; // объект <a href="Module.html#exports">Module#exports</a>.
+        // Доступ к модулям из глобального пространства имен: require('some.name.space'); $XM.some.name.space; // объект
+        <a href="Module.html#exports">Module#exports</a>.
 
         // Регистрация модуля в браузере: require.define('name.space', function (module, exports, require, basedir) { // Тело модуля });</code></pre>
 
@@ -358,7 +362,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.0-dev</a> on Tue Sep 03 2013 19:41:35 GMT+0400 (MSK)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.0-dev</a> on Wed Sep 04 2013 16:21:57 GMT+0400 (MSK)
 </footer>
 
 <script> prettyPrint(); </script>
