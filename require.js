@@ -1,7 +1,7 @@
 /**
  * @file Implementation require for XScript and client-side.
  * @author Vlad Kurkin <b-vladi@yandex-team.ru>
- * @version 1.6
+ * @version 1.7
  * @license <a href="https://github.com/appendto/amplify/blob/master/MIT-LICENSE.txt">MIT</a>
  */
 
@@ -13,9 +13,19 @@
 var $XM = {};
 
 /**
- * @description Кастомная реализация функции require для CommonJS-модулей с поддержкой окружений XScript и Client-side. See {@tutorial README}.
+ * @description Кастомная реализация функции require для CommonJS-модулей с поддержкой окружений XScript и Client-side.
  * <br />Алгоритм работы require:
  * <br /><img src="../uml/Work.png" />
+ * <br />Require поддерживает рекурсивную загрузку модулей при условии соблюдения правил написания кода:
+ * <ul>
+ *     <li>
+ *       Свойство {@link Module#exports} модуля, который рекурсивно загружает сам себя (явно или из цепочки вызовов require, инициализированной из этого модуля), не должно перезаписываться. Вместо этого следует добавлять свойства непосредственно в нативный объект {@link Module#exports}.
+ *     </li>
+ *     <li>
+ *         Модуль "A", вызвающий модуль "B" (который уже выполняется выше модуля "A" в стеке вызовов), не должен использовать API модуля "B" непосредственно после вызова require в текущем контексте выполнения, так как к этому моменту объект {@link Module#exports} модуля "B" ещё не инициализирован.
+ *     </li>
+ * </ul>
+ * <br />Пример рекурсивного запроса модулей ниже.<br />
  * <br />Схема наследования модулей:
  * <br /><img src="../uml/Inherit.png" />
  * @param {String} namespace Пространство имен модуля или путь к JavaScript-файлу. Пространство имен представляет собой строку имён, разделённых точкой. Имя должно начинаться с буквы, затем могут идти символы латинского алфавита, а так же знаки "-" и "_". Если переданный аргумент не является пространством имен, он воспринимается как путь к файлу, по которому следует загрузить модуль.
@@ -45,8 +55,29 @@ var $XM = {};
  * require.define('name.space', function (module, exports, require, basedir) {
  *     // Тело модуля
  * });
+ *
+ * // Пример рекурсивного вызова модулей:
+ * // Вызов модуля из глобального контекста:
+ * var A = require('A');
+ * // Рекурсии нет, выполнение продолжается
+ *
+ * // Код модуля "A":
+ * var B = require('B');
+ *
+ * // Записываем свойство в нативный {@link Module#exports}
+ * this.field = 'value';
+ *
+ * // Код модуля "B":
+ * // Рекурсивный вызов модуля "A"
+ * var A = require('A');
+ *
+ * A.field; // undefined, модуль ещё не инициализирован.
+ *
+ * this.method = function () {
+ *     //
+ *     return A.field; // 'value'
+ * }
  */
-
 var require = (function () {
     var
         MODULE_CACHE = {},
@@ -103,6 +134,7 @@ var require = (function () {
 
     function RequireError(message, error) {
         if (error) {
+            this.stack = error.stack;
             message += ' Reason: "' + error + '".';
         }
 
@@ -396,6 +428,10 @@ var require = (function () {
      * @name Module#init
      */
     Module.prototype.init = function (wrapper) {
+        if (this.namespace) {
+            MODULE_CACHE[this.namespace] = this.exports;
+        }
+
         STACK.push(this.path);
 
         if (typeof wrapper === 'function') {

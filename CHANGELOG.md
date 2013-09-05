@@ -1,3 +1,5 @@
+###v1.7
+    Added support for recursive calls require.
 ###v1.6
     Added support for the work in client-side. Minor fixes.
 ###v1.5
