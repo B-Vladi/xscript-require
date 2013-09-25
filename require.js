@@ -519,7 +519,7 @@ var require = (function () {
             throw new RequireError('Module namespace must be a non-empty string.');
         }
 
-        if (NSRegExp.test(namespace)) {
+        if (!NSRegExp.test(namespace)) {
             throw new RequireError('First argument is not a namespace.');
         }
 
