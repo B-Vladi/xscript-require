@@ -495,7 +495,15 @@ var require = (function () {
                 throw new RequireError('Cant find module "' + namespace + '" in paths: "' + Require.path.join(', ') + '".');
             }
         } else {
-            return new Module(undefined, namespace).exports;
+            try {
+                return new Module(undefined, namespace).exports;
+            } catch (error) {
+                if (!(error instanceof RequireError)) {
+                    error = new RequireError('Cant find module in path: "' + namespace + '".');
+                }
+
+                throw error;
+            }
         }
 
         MODULE_CACHE[namespace] = module.exports;
