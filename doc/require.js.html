@@ -28,7 +28,7 @@
             <pre class="prettyprint source"><code>/**
  * @file Implementation require for XScript and client-side.
  * @author Vlad Kurkin &lt;b-vladi@yandex-team.ru>
- * @version 1.7
+ * @version 1.8
  * @license &lt;a href="https://github.com/appendto/amplify/blob/master/MIT-LICENSE.txt">MIT&lt;/a>
  */
 
@@ -38,7 +38,6 @@
  * @see require
  */
 var $XM = {};
-
 
 /**
  * @description Кастомная реализация функции require для CommonJS-модулей с поддержкой окружений XScript и Client-side.
@@ -115,73 +114,90 @@ var require = (function () {
         parent = null,
         undefined;
 
-    function requireFactory(module) {
-        function Wrapper(namespace) {
-            parent = module;
-            return Require(namespace);
-        }
-
-        Wrapper.path = Require.path;
-        Wrapper.extension = Require.extension;
-        Wrapper.packageName = Require.packageName;
-        Wrapper.file = Require.file;
-        Wrapper.define = Require.define;
-        Wrapper.prototype = Require.prototype;
-
-        return Wrapper;
-    }
-
-    function stripBOM(content) {
-        if (content.charCodeAt(0) === 0xFEFF) {
-            content = content.slice(1);
-        }
-
-        return content;
-    }
-
-    function createNamespace(module) {
+    function Require(namespace) {
         var
-            name,
+            module,
             index = 0,
-            namespace = module.namespace.split('.'),
-            length = namespace.length,
-            currentNamespace = $XM;
+            pathsLength = Require.path.length,
+            path;
 
-        while (index &lt; length) {
-            name = namespace[index++];
+        if (typeof namespace !== 'string' || namespace === '') {
+            throw new RequireError('Namespace must be non-empty string.');
+        }
 
-            if (index === length) {
-                currentNamespace[name] = module.exports;
-            } else if (!currentNamespace.hasOwnProperty(name)) {
-                currentNamespace[name] = {};
+        if (MODULE_CACHE.hasOwnProperty(namespace)) {
+            return MODULE_CACHE[namespace];
+        }
+
+        if (WRAPPER_CACHE.hasOwnProperty(namespace)) {
+            module = new Module(namespace, undefined).init(WRAPPER_CACHE[namespace]);
+
+            createNamespace(module);
+
+            delete WRAPPER_CACHE[namespace];
+        } else if (NSRegExp.test(namespace)) {
+
+            while (index &lt; pathsLength) {
+                Exports.prototype = module ? module.exports : Require.prototype;
+                path = Require.path[index++];
+
+                try {
+                    module = new Module(namespace, path);
+                } catch (error) {
+                    if (error instanceof RequireError) {
+                        throw error;
+                    }
+                }
             }
 
-            currentNamespace = currentNamespace[name];
+            if (module) {
+                createNamespace(module);
+            } else {
+                throw new RequireError('Cant find module "' + namespace + '" in paths: "' + Require.path.join(', ') + '".');
+            }
+        } else {
+            try {
+                return new Module(undefined, namespace).exports;
+            } catch (error) {
+                if (!(error instanceof RequireError)) {
+                    error = new RequireError('Cant find module in path: "' + namespace + '".');
+                }
+
+                throw error;
+            }
         }
+
+        MODULE_CACHE[namespace] = module.exports;
+
+        return module.exports;
     }
 
-    function RequireError(message, error) {
-        if (error) {
-            this.stack = error.stack;
-            message += ' Reason: "' + error + '".';
-        }
+    Require.path = [];
+    Require.extension = 'js';
+    Require.packageName = 'package.json';
+    Require.prototype = Exports.prototype;
 
-        STACK.pop();
-
-        if (STACK.length) {
-            message += ' Module Stack: "' + STACK.join(', ') + '". ';
-        }
-
-        this.message = message;
-
-        STACK.length = 0;
+    try {
+        Require.file = xscript.file;
+    } catch (error) {
+        // Находимся в браузере, всё ок.
     }
 
-    RequireError.prototype = new Error();
-    RequireError.prototype.name = 'RequireError';
+    Require.define = function (namespace, module) {
+        if (typeof namespace !== 'string' || namespace === '') {
+            throw new RequireError('Module namespace must be a non-empty string.');
+        }
 
-    function Exports() {
-    }
+        if (!NSRegExp.test(namespace)) {
+            throw new RequireError('First argument is not a namespace.');
+        }
+
+        if (typeof module !== 'function') {
+            throw new RequireError('Module is not a function.');
+        }
+
+        WRAPPER_CACHE[namespace] = module;
+    };
 
     /**
      * Конструктор объекта модуля. Структура создаваемых экземпляров отличается от спецификации CommonJS.
@@ -456,18 +472,20 @@ var require = (function () {
      * @name Module#init
      */
     Module.prototype.init = function (wrapper) {
+        var path = this.path || this.namespace;
+
         if (this.namespace) {
             MODULE_CACHE[this.namespace] = this.exports;
         }
 
-        STACK.push(this.path);
+        STACK.push(path);
 
         if (typeof wrapper === 'function') {
             try {
                 wrapper.call(this.exports, this, this.exports, this.require, this.basedir);
             } catch (error) {
                 if (!(error instanceof RequireError)) {
-                    error = new RequireError('Cant init module "' + this.path + '".', error);
+                    error = new RequireError('Cant init module "' + path + '".', error);
                 }
 
                 throw error;
@@ -481,82 +499,73 @@ var require = (function () {
         return this;
     };
 
-    function Require(namespace) {
+    function Exports() {
+    }
+
+    function RequireError(message, error) {
+        if (error) {
+            this.stack = error.stack;
+            message += ' Reason: "' + error + '".';
+        }
+
+        STACK.pop();
+
+        if (STACK.length) {
+            message += ' Module Stack: "' + STACK.join(', ') + '". ';
+        }
+
+        this.message = message;
+
+        STACK.length = 0;
+    }
+
+    RequireError.prototype = new Error();
+    RequireError.prototype.name = 'RequireError';
+
+    function requireFactory(module) {
+        function Wrapper(namespace) {
+            parent = module;
+            return Require(namespace);
+        }
+
+        Wrapper.path = Require.path;
+        Wrapper.extension = Require.extension;
+        Wrapper.packageName = Require.packageName;
+        Wrapper.file = Require.file;
+        Wrapper.define = Require.define;
+        Wrapper.prototype = Require.prototype;
+
+        return Wrapper;
+    }
+
+    function stripBOM(content) {
+        if (content.charCodeAt(0) === 0xFEFF) {
+            content = content.slice(1);
+        }
+
+        return content;
+    }
+
+    function createNamespace(module) {
         var
-            module,
+            name,
             index = 0,
-            pathsLength = Require.path.length,
-            path;
+            namespace = module.namespace.split('.'),
+            length = namespace.length,
+            currentNS = $XM;
 
-        if (typeof namespace !== 'string' || namespace === '') {
-            throw new RequireError('Namespace must be non-empty string.');
-        }
+        while (index &lt; length) {
+            name = namespace[index++];
 
-        if (MODULE_CACHE.hasOwnProperty(namespace)) {
-            return MODULE_CACHE[namespace];
-        }
-
-        if (WRAPPER_CACHE.hasOwnProperty(namespace)) {
-            module = new Module(namespace, undefined).init(WRAPPER_CACHE[namespace]);
-
-            createNamespace(module);
-
-            delete WRAPPER_CACHE[namespace];
-        } else if (NSRegExp.test(namespace)) {
-
-            while (index &lt; pathsLength) {
-                Exports.prototype = module ? module.exports : Require.prototype;
-                path = Require.path[index++];
-
-                try {
-                    module = new Module(namespace, path);
-                } catch (error) {
-                    if (error instanceof RequireError) {
-                        throw error;
-                    }
-                }
+            if (index === length) {
+                currentNS[name] = module.exports;
+            } else if (!currentNS.hasOwnProperty(name)) {
+                currentNS[name] = {};
             }
 
-            if (module) {
-                createNamespace(module);
-            } else {
-                throw new RequireError('Cant find module "' + namespace + '" in paths: "' + Require.path.join(', ') + '".');
-            }
-        } else {
-            return new Module(undefined, namespace).exports;
+            currentNS = currentNS[name];
         }
-
-        MODULE_CACHE[namespace] = module.exports;
-
-        return module.exports;
     }
-
-    Require.path = [];
-    Require.extension = 'js';
-    Require.packageName = 'package.json';
-    Require.prototype = Exports.prototype;
-
-    try {
-        Require.file = xscript.file;
-    } catch (error) {
-        // Находимся в браузере, всё ок.
-    }
-
-    Require.define = function (namespace, module) {
-        if (typeof namespace !== 'string' || namespace === '') {
-            throw new RequireError('Module namespace must be a non-empty string.');
-        }
-
-        if (NSRegExp.test(namespace)) {
-            throw new RequireError('First argument is not a namespace.');
-        }
-
-        if (typeof module !== 'function') {
-            throw new RequireError('Module is not a function.');
-        }
-
-        WRAPPER_CACHE[namespace] = module;
-    };
 
     return Require;
 }());
@@ -708,7 +717,7 @@ var require = (function () {
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.0-dev</a> on Thu Sep 05 2013 16:34:19 GMT+0400 (MSK)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-dev</a> on Thu Oct 10 2013 15:16:03 GMT+0400 (MSK)
 </footer>
 
 <script> prettyPrint(); </script>

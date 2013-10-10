@@ -1,3 +1,5 @@
+###v1.8
+    Fixed a minor bug in Module#init method. Refactoring.
 ###v1.7
     Added support for recursive calls require.
 ###v1.6
