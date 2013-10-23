@@ -218,7 +218,7 @@ var require = (function () {
          * @default null
          * @type {Object}
          */
-        this.package = null;
+        this['package'] = null;
 
         /**
          * Пространство имен модуля.
@@ -355,18 +355,18 @@ var require = (function () {
 
                     case PATH_TO_PACKAGE:
                         try {
-                            this.package = require.file.load(path);
+                            this['package'] = require.file.load(path);
                         } catch (error) {
                             throw new RequireError('Can`t load JSON file: "' + path + '".', error);
                         }
 
                         try {
-                            this.package = JSON.parse(stripBOM(this.package));
+                            this['package'] = JSON.parse(stripBOM(this['package']));
                         } catch (error) {
                             throw new RequireError('Can`t parse JSON file: "' + path + '".', error);
                         }
 
-                        path = dir + '/' + (this.package.hasOwnProperty('main') ? this.package.main : namespace + '.' + Require.extension);
+                        path = dir + '/' + (this['package'].hasOwnProperty('main') ? this['package'].main : namespace + '.' + Require.extension);
                         state = PATH_TO_MAIN;
                         break;
 
