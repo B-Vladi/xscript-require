@@ -1,6 +1,6 @@
 Implementation require for XScript and client-side
 ===============
-### Version: 1.8
+### Version: 1.9
 
 ### Lisence: [MIT](https://github.com/appendto/amplify/blob/master/MIT-LICENSE.txt)
 
@@ -9,7 +9,7 @@ Implementation require for XScript and client-side
 * Поддержка выполнения модулей в браузере.
 * В окружении XScript-а загружает модуль по его namespace или локальному пути. Логика поиска файлов реализована в {@link Module#load}. Исходный код модуля выполняется один раз и далее отдается из внутреннего кеша.
 * Поддерживается регистрация модулей через метод {@link require}.define.
-* Реализует поддержку пространств имен модулей и сохраняет все загруженные модули в глобальном объекте {@link $XM} в соответствии с их {@link Module#namespace}.
+* Реализует поддержку пространств имен модулей. По-умолчанию ссылки на модули сохраняются во внутренний объект {@link require}require.global. С помощью функции {@link require}.setModuleNameSpace вы можете создать именованное пространситво имен в глобальном объекте вашего окружения.
 * Поддерживается наследование и переопределение и модулей через {@link require}.path.
 * Поддерживается рекурсивный вызов require.
 

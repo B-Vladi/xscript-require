@@ -1,16 +1,9 @@
 /**
  * @file Implementation require for XScript and client-side.
  * @author Vlad Kurkin <b-vladi@yandex-team.ru>
- * @version 1.8
+ * @version 1.9
  * @license <a href="https://github.com/appendto/amplify/blob/master/MIT-LICENSE.txt">MIT</a>
  */
-
-/**
- * Глобальное пространство имен CommonJS-модулей.
- * @namespace $XM
- * @see require
- */
-var $XM = {};
 
 /**
  * @description Кастомная реализация функции require для CommonJS-модулей с поддержкой окружений XScript и Client-side.
@@ -39,7 +32,12 @@ var $XM = {};
  * @property {Object} [file=xscript.file] API XScript-а для работы с файловой системой. Существует только на серверной стороне.
  * @property {Object} prototype Общий прототип объектов ({@link Module#exports}) (см. схему наследования).
  * @property {Function} define(namespace,wrapper) Регистрирует модуль по указанному пространству имен в первом параметре. Вторым параметром должена быть функция, которая принимает 4 аргумента (см. {@link Module#compile}) и содержит в себе тело модуля. Вызов метода {@link require}.define не инициализирует модуль (функция wrapper не вызывается). Инициализация происходит в момент первого обращения к модулю через вызов require. Все аргументы обязательны.
- * @throws {RequireError} Ошибка получения модуля.
+ * @property {Object} global Ссылка на глобальное пространство имен. В этот объект сохраняются ссылки на все созданные модули в рамках текущего require и его детей. Этот объект может быть переопределён в коде модуля.
+ * @property {String} [namespace=null] Имя, по которому будет доступен объект {@link require.global} из глобального объекта окружения (window, global). Require самостоятельно не сохраняет объект {@link require.global} в глобальном объекте, для этого вы должны использовать метод {@link require.setModuleNameSpace}.
+ * @property {Function} setModuleNameSpace([name=require.namespace]) Сохраняет объект {@link require.global} в глобольный объект окружения по указанному имени. В случае успеха возвращает true, иначе false.
+ * @property {Function} [top=null] Ссылка на исходную функцию {@link require}.
+ * @property {Function} Error(message,error) Конструктор ошибки загрузки модуля.
+ * @throws {Require.Error()} Ошибка получения модуля.
  * @example
  * // Загрузка модуля из разных уровней переопределения:
  * require.path = ['/path/to/first/dir/', './path/to/second/dir'];
@@ -49,6 +47,9 @@ var $XM = {};
  *
  * // Доступ к модулям из глобального пространства имен:
  * require('some.name.space');
+ * $XM.some.name.space;// TypeError: объект $XM не найден в глобальном объекте.
+ * // Имя можно регистрировать и после вызова require
+ * require.setModuleNameSpace('$XM');
  * $XM.some.name.space; // объект {@link Module#exports}.
  *
  * // Регистрация модуля в браузере:
@@ -78,7 +79,7 @@ var $XM = {};
  *     return A.field; // 'value'
  * }
  */
-var require = (function () {
+var require = (function (global) {
     var
         MODULE_CACHE = {},
         WRAPPER_CACHE = {},
@@ -87,116 +88,33 @@ var require = (function () {
         parent = null,
         undefined;
 
-    function Require(namespace) {
-        var
-            module,
-            index = 0,
-            pathsLength = Require.path.length,
-            path;
-
-        if (typeof namespace !== 'string' || namespace === '') {
-            throw new RequireError('Namespace must be non-empty string.');
-        }
-
-        if (MODULE_CACHE.hasOwnProperty(namespace)) {
-            return MODULE_CACHE[namespace];
-        }
-
-        if (WRAPPER_CACHE.hasOwnProperty(namespace)) {
-            module = new Module(namespace, undefined).init(WRAPPER_CACHE[namespace]);
-
-            createNamespace(module);
-
-            delete WRAPPER_CACHE[namespace];
-        } else if (NSRegExp.test(namespace)) {
-
-            while (index < pathsLength) {
-                Exports.prototype = module ? module.exports : Require.prototype;
-                path = Require.path[index++];
-
-                try {
-                    module = new Module(namespace, path);
-                } catch (error) {
-                    if (error instanceof RequireError) {
-                        throw error;
-                    }
-                }
-            }
-
-            if (module) {
-                createNamespace(module);
-            } else {
-                throw new RequireError('Cant find module "' + namespace + '" in paths: "' + Require.path.join(', ') + '".');
-            }
-        } else {
-            try {
-                return new Module(undefined, namespace).exports;
-            } catch (error) {
-                if (!(error instanceof RequireError)) {
-                    error = new RequireError('Cant find module in path: "' + namespace + '".');
-                }
-
-                throw error;
-            }
-        }
-
-        MODULE_CACHE[namespace] = module.exports;
-
-        return module.exports;
-    }
-
-    Require.path = [];
-    Require.extension = 'js';
-    Require.packageName = 'package.json';
-    Require.prototype = Exports.prototype;
-
-    try {
-        Require.file = xscript.file;
-    } catch (error) {
-        // Находимся в браузере, всё ок.
-    }
-
-    Require.define = function (namespace, module) {
-        if (typeof namespace !== 'string' || namespace === '') {
-            throw new RequireError('Module namespace must be a non-empty string.');
-        }
-
-        if (!NSRegExp.test(namespace)) {
-            throw new RequireError('First argument is not a namespace.');
-        }
-
-        if (typeof module !== 'function') {
-            throw new RequireError('Module is not a function.');
-        }
-
-        WRAPPER_CACHE[namespace] = module;
-    };
-
+    global = new Function('return this;')() || global || this;
     /**
      * Конструктор объекта модуля. Структура создаваемых экземпляров отличается от спецификации CommonJS.
      * @summary <img src="../uml/Module.png" alt="" />
      * @name Module
      * @constructor
      * @private
+     * @param {Function} require Пространство имен модуля.
      * @param {String} [namespace=undefined] Пространство имен модуля.
      * @param {String} [path=undefined] Путь к файлу или дирректории, по которому он будет загружен.
-     * @throws {RequireError} Ошибка создания модуля.
+     * @throws {Require.Error} Ошибка создания модуля.
      */
-    function Module(namespace, path) {
+    function Module(require, namespace, path) {
         /**
          * Функция загрузки модуля, аналогична {@link require}.
          * @param {String} namespace См. {@link require}.
          * @name Module#require
          * @method
          */
-        this.require = requireFactory(this);
+        this.require = requireFactory(this, require);
 
         /**
          * Реализация модуля, являющаяся его внешним API. По-умолчанию этот объект наследует от {@link Module#prototype}. Для того, что бы разорвать наследование между уровнями переопределения, достаточно заменить значение этого свойства (см. диаграмму наследования).
          * @name Module#exports
          * @type {Object}
          */
-        this.exports = new Exports();
+        this.exports = new Module.Exports();
 
         /**
          * Ссылка на прототип объекта {@link Module#exports}. Концом цепочки наследования является {@link require}.prototype, если не было переопределено свойство {@link Module#exports} на каком-либо уровне переопределения.
@@ -210,7 +128,7 @@ var require = (function () {
          *   return module.prototype.log('[LOG]: ' + string);
          * }
          */
-        this.prototype = Exports.prototype;
+        this.prototype = Module.Exports.prototype;
 
         /**
          * Ссылка на JSON-объект, загруженный из {@link require}.packageName.
@@ -292,6 +210,8 @@ var require = (function () {
         }
     }
 
+    Module.Exports = function () {};
+
     /**
      * Загружает код модуля из папки dir на серверной стороне. Поиск кода осуществляется последовательно в местах:
      * <br /><br />
@@ -318,7 +238,7 @@ var require = (function () {
      * @param {String} dir Путь к файлу или дирректории.
      * @return {Module}
      * @name Module#load
-     * @throws {Error|RequireError} Ошибка загрузки кода.
+     * @throws {Error|Require.Error} Ошибка загрузки кода.
      * @method
      */
     Module.prototype.load = function (dir) {
@@ -330,6 +250,7 @@ var require = (function () {
 
         var
             namespace = this.namespace,
+            require = this.require,
             path = dir,
             state;
 
@@ -349,7 +270,7 @@ var require = (function () {
             if (require.file.test(path)) {
                 switch (state) {
                     case PATH_TO_DIR:
-                        path = dir + Require.packageName;
+                        path = dir + require.packageName;
                         state = PATH_TO_PACKAGE;
                         break;
 
@@ -357,16 +278,16 @@ var require = (function () {
                         try {
                             this['package'] = require.file.load(path);
                         } catch (error) {
-                            throw new RequireError('Can`t load JSON file: "' + path + '".', error);
+                            throw new require.Error('Can`t load JSON file: "' + path + '".', error);
                         }
 
                         try {
                             this['package'] = JSON.parse(stripBOM(this['package']));
                         } catch (error) {
-                            throw new RequireError('Can`t parse JSON file: "' + path + '".', error);
+                            throw new require.Error('Can`t parse JSON file: "' + path + '".', error);
                         }
 
-                        path = dir + '/' + (this['package'].hasOwnProperty('main') ? this['package'].main : namespace + '.' + Require.extension);
+                        path = dir + '/' + (this['package'].hasOwnProperty('main') ? this['package'].main : namespace + '.' + require.extension);
                         state = PATH_TO_MAIN;
                         break;
 
@@ -374,7 +295,7 @@ var require = (function () {
                         try {
                             this.source = require.file.load(path);
                         } catch (error) {
-                            throw new RequireError('Can`t load module file: "' + path + '".', error);
+                            throw new require.Error('Can`t load module file: "' + path + '".', error);
                         }
 
                         this.source = stripBOM(this.source);
@@ -388,17 +309,17 @@ var require = (function () {
             } else {
                 switch (state) {
                     case PATH_TO_DIR:
-                        path = dir + '.' + Require.extension;
+                        path = dir + '.' + require.extension;
                         state = PATH_TO_FILE;
                         break;
 
                     case PATH_TO_PACKAGE:
-                        path = dir + '/' + namespace + '.' + Require.extension;
+                        path = dir + '/' + namespace + '.' + require.extension;
                         state = PATH_TO_FILE;
                         break;
 
                     case PATH_TO_MAIN:
-                        throw new RequireError('Can`t find main file: "' + path + '".');
+                        throw new require.Error('Can`t find main file: "' + path + '".');
                         break;
 
                     case PATH_TO_FILE:
@@ -419,7 +340,7 @@ var require = (function () {
      * </pre>
      * @param {String} [source=Module#source] Исходный код модуля.
      * @return {Function} Скомпилированная функция-обертка модуля.
-     * @throws {RequireError} Ошибка компиляции с указанием причины.
+     * @throws {Require.Error} Ошибка компиляции с указанием причины.
      * @method
      * @name Module#compile
      */
@@ -431,7 +352,7 @@ var require = (function () {
         try {
             return new Function('module', 'exports', 'require', 'basedir', this.source);
         } catch (error) {
-            throw new RequireError('Compilation error module.', error);
+            throw new this.require.Error('Compilation error module.', error);
         }
     };
 
@@ -439,13 +360,14 @@ var require = (function () {
      * Инициализирует модуль. Код модуля выполняется в контексте {@link Module#exports}.
      * @since 1.6
      * @param {Function} wrapper Функция, в которой содержится тело модуля.
-     * @throws {RequireError} Ошибка инициализации.
+     * @throws {Require.Error} Ошибка инициализации.
      * @returns {Module} Объект {@link Module}.
      * @method
      * @name Module#init
      */
     Module.prototype.init = function (wrapper) {
         var path = this.path || this.namespace;
+        var require = this.require;
 
         if (this.namespace) {
             MODULE_CACHE[this.namespace] = this.exports;
@@ -455,16 +377,16 @@ var require = (function () {
 
         if (typeof wrapper === 'function') {
             try {
-                wrapper.call(this.exports, this, this.exports, this.require, this.basedir);
+                wrapper.call(this.exports, this, this.exports, require, this.basedir);
             } catch (error) {
-                if (!(error instanceof RequireError)) {
-                    error = new RequireError('Cant init module "' + path + '".', error);
+                if (!(error instanceof require.Error)) {
+                    error = new require.Error('Cant init module "' + path + '".', error);
                 }
 
                 throw error;
             }
         } else {
-            throw new RequireError('Error initializing module.', 'Wrapper is not a function');
+            throw new require.Error('Error initializing module.', 'Wrapper is not a function');
         }
 
         STACK.pop();
@@ -472,10 +394,121 @@ var require = (function () {
         return this;
     };
 
-    function Exports() {
+    function Require(namespace) {
+        var
+            module,
+            index = 0,
+            require = parent ? parent.require : Require,
+            pathsLength = require.path.length,
+            path;
+
+        if (typeof namespace !== 'string' || namespace === '') {
+            throw new require.Error('Namespace must be non-empty string.');
+        }
+
+        if (MODULE_CACHE.hasOwnProperty(namespace)) {
+            return MODULE_CACHE[namespace];
+        }
+
+        if (WRAPPER_CACHE.hasOwnProperty(namespace)) {
+            module = new Module(require, namespace, undefined).init(WRAPPER_CACHE[namespace]);
+
+            createNamespace(module);
+
+            delete WRAPPER_CACHE[namespace];
+        } else if (NSRegExp.test(namespace)) {
+
+            while (index < pathsLength) {
+                Module.Exports.prototype = module ? module.exports : require.prototype;
+                path = require.path[index++];
+
+                try {
+                    module = new Module(require, namespace, path);
+                } catch (error) {
+                    if (error instanceof require.Error) {
+                        throw error;
+                    }
+                }
+            }
+
+            if (module) {
+                createNamespace(module);
+            } else {
+                throw new require.Error('Cant find module "' + namespace + '" in paths: "' + require.path.join(', ') + '".');
+            }
+        } else {
+            try {
+                return new Module(require, undefined, namespace).exports;
+            } catch (error) {
+                if (!(error instanceof require.Error)) {
+                    error = new require('Cant find module in path: "' + namespace + '".');
+                }
+
+                throw error;
+            }
+        }
+
+        MODULE_CACHE[namespace] = module.exports;
+
+        return module.exports;
     }
 
-    function RequireError(message, error) {
+
+    /**
+     * Глобальное пространство имен CommonJS-модулей.
+     * @namespace $XM
+     * @see require
+     */
+    Require.global = {};
+    Require.namespace = null;
+    Require.path = [];
+    Require.extension = 'js';
+    Require.packageName = 'package.json';
+    Require.prototype = Module.Exports.prototype;
+    Require.top = Require;
+
+    try {
+        Require.file = xscript.file;
+    } catch (error) {
+        // Находимся в браузере, всё ок.
+    }
+
+    Require.define = function (namespace, module) {
+        if (typeof namespace !== 'string' || namespace === '') {
+            throw new this.Error('Module namespace must be a non-empty string.');
+        }
+
+        if (!NSRegExp.test(namespace)) {
+            throw new this.Error('First argument is not a namespace.');
+        }
+
+        if (typeof module !== 'function') {
+            throw new this.Error('Module is not a function.');
+        }
+
+        WRAPPER_CACHE[namespace] = module;
+    };
+
+    Require.setModuleNameSpace = function (name) {
+        if (typeof name === 'string' && name != '') {
+            this.namespace = name;
+        }
+
+        if (this.namespace == null) {
+            return false;
+        }
+
+        try {
+            global[this.namespace] = this.global;
+        } catch (error) {
+            // The global object is not defined or readonly, use the {@link require.global} reference.
+            return false;
+        }
+
+        return true;
+    };
+
+    Require.Error = function(message, error) {
         if (error) {
             this.stack = error.stack;
             message += ' Reason: "' + error + '".';
@@ -490,23 +523,29 @@ var require = (function () {
         this.message = message;
 
         STACK.length = 0;
-    }
+    };
 
-    RequireError.prototype = new Error();
-    RequireError.prototype.name = 'RequireError';
+    Require.Error.NAME = 'Require.Error';
+    Require.Error.prototype = new Error();
+    Require.Error.prototype.name = Require.Error.NAME;
 
-    function requireFactory(module) {
+    function requireFactory(module, require) {
         function Wrapper(namespace) {
             parent = module;
-            return Require(namespace);
+            return require(namespace);
         }
 
-        Wrapper.path = Require.path;
-        Wrapper.extension = Require.extension;
-        Wrapper.packageName = Require.packageName;
-        Wrapper.file = Require.file;
-        Wrapper.define = Require.define;
-        Wrapper.prototype = Require.prototype;
+        Wrapper.namespace = require.namespace;
+        Wrapper.path = require.path;
+        Wrapper.extension = require.extension;
+        Wrapper.packageName = require.packageName;
+        Wrapper.file = require.file;
+        Wrapper.define = require.define;
+        Wrapper.setModuleNameSpace = require.setModuleNameSpace;
+        Wrapper.global = require.global;
+        Wrapper.prototype = require.prototype;
+        Wrapper.Error = require.Error;
+        Wrapper.top = Require;
 
         return Wrapper;
     }
@@ -525,20 +564,23 @@ var require = (function () {
             index = 0,
             namespace = module.namespace.split('.'),
             length = namespace.length,
-            currentNS = $XM;
+            NS = module.require.global;
 
         while (index < length) {
             name = namespace[index++];
 
             if (index === length) {
-                currentNS[name] = module.exports;
-            } else if (!currentNS.hasOwnProperty(name)) {
-                currentNS[name] = {};
+                NS[name] = module.exports;
+            } else if (!NS.hasOwnProperty(name)) {
+                NS[name] = {};
             }
 
-            currentNS = currentNS[name];
+            NS = NS[name];
         }
     }
+
+    // Initialization the default namespace
+    // Require.setModuleNameSpace(Require.namespace);
 
     return Require;
 }());
@@ -656,21 +698,21 @@ var require = (function () {
  *   note right: Found?
  *   -l-> [<b>true</b>] "Загрузка файла из <i>path</i>" as Load
  *   else
- *   --> [<b>false</b>\n<i>Can`t find main file</i>] "<i>throw RequireError</i>" as RequireError
+ *   --> [<b>false</b>\n<i>Can`t find main file</i>] "<i>throw Require.Error</i>" as Require.Error
  * endif
  *
  * PathToFile -d-> if "" then
  *   note left: Found?
  *   -r-> [<b>true</b>] Load
  *   else
- *   --> [<b>false</b>\n<i>Cant find module</i>] RequireError
+ *   --> [<b>false</b>\n<i>Cant find module</i>] Require.Error
  * endif
  *
  * Load --> if "" then
  *   note left: Loaded?
  *   -r-> [<b>true</b>] (*)
  *   else
- *   --> [<b>false</b>\n<i>Can`t load module file</i>] RequireError
+ *   --> [<b>false</b>\n<i>Can`t load module file</i>] Require.Error
  * endif
  * @enduml
  */

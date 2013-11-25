@@ -416,6 +416,179 @@
         </tr>
 	
 	
+	
+        <tr>
+            
+                <td class="name"><code>global</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+            
+            
+                <td class="attributes">
+                
+                    
+                
+                </td>
+            
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">Ссылка на глобальное пространство имен. В этот объект сохраняются ссылки на все созданные модули в рамках текущего require и его детей. Этот объект может быть переопределён в коде модуля.</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>namespace</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+                    
+                
+                </td>
+            
+            
+            
+                <td class="default">
+                
+                    null
+                
+                </td>
+            
+            
+            <td class="description last">Имя, по которому будет доступен объект require.global из глобального объекта окружения (window, global). Require самостоятельно не сохраняет объект require.global в глобальном объекте, для этого вы должны использовать метод require.setModuleNameSpace.</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>setModuleNameSpace([name=require.namespace])</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+            
+            
+                <td class="attributes">
+                
+                    
+                
+                </td>
+            
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">Сохраняет объект require.global в глобольный объект окружения по указанному имени. В случае успеха возвращает true, иначе false.</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>top</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+            
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+                    
+                
+                </td>
+            
+            
+            
+                <td class="default">
+                
+                    null
+                
+                </td>
+            
+            
+            <td class="description last">Ссылка на исходную функцию <a href="global.html#require">require</a>.</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>Error(message,error)</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+            
+            
+                <td class="attributes">
+                
+                    
+                
+                </td>
+            
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">Конструктор ошибки загрузки модуля.</td>
+        </tr>
+	
+	
 	</tbody>
 </table></dl>
         
@@ -440,7 +613,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="require.js.html">require.js</a>, <a href="require.js.html#line15">line 15</a>
+        <a href="require.js.html">C:/Users/b-vladi/Desktop/IDEA Project/modules/Require/require.js</a>, <a href="require.js.html#line8">line 8</a>
     </li></ul></dd>
     
     
@@ -483,7 +656,7 @@
             </dt>
             <dd>
                 
-<span class="param-type">RequireError</span>
+<span class="param-type">Require.Error()</span>
 
 
             </dd>
@@ -529,6 +702,9 @@ require('name.space');
 
 // Доступ к модулям из глобального пространства имен:
 require('some.name.space');
+$XM.some.name.space;// TypeError: объект $XM не найден в глобальном объекте.
+// Имя можно регистрировать и после вызова require
+require.setModuleNameSpace('$XM');
 $XM.some.name.space; // объект <a href="Module.html#exports">Module#exports</a>.
 
 // Регистрация модуля в браузере:
@@ -583,7 +759,7 @@ this.method = function () {
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-dev</a> on Thu Oct 10 2013 15:16:03 GMT+0400 (MSK)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-dev</a> on Mon Nov 25 2013 16:52:02 GMT+0400 (MSK)
 </footer>
 
 <script> prettyPrint(); </script>

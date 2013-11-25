@@ -1,3 +1,6 @@
+###v1.9
+    Added static properties: global, top, namespace, setModuleNameSpace and Error in the require function.
+    Initialization namespace on request from the function setModuleNameSpace
 ###v1.8
     Fixed a minor bug in Module#init method. Refactoring.
 ###v1.7
