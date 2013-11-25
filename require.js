@@ -580,7 +580,7 @@ var require = (function (global) {
     }
 
     // Initialization the default namespace
-    // Require.setModuleNameSpace(Require.namespace);
+    Require.setModuleNameSpace('$XM');
 
     return Require;
 }());
