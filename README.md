@@ -21,7 +21,7 @@ Implementation require for XScript and client-side
     require.path = ['/path/to/first/dir/', './path/to/second/dir'];
     require('name.space');
 
-В этом случае объект {Module#exports}, из модуля "path/to/second/dir/names.space.js", будет наследовать от объекта {Module#exports}, из модуля "/path/to/first/dir/names.space.js".
+В этом случае объект {Module#exports}, из модуля "path/to/second/dir/name.space.js", будет наследовать от объекта {Module#exports}, из модуля "/path/to/first/dir/name.space.js".
 
 ####Доступ к модулям из глобального пространства имен:
 
