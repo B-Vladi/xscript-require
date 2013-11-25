@@ -398,12 +398,11 @@ var require = (function (global) {
         var
             module,
             index = 0,
-            require = parent ? parent.require : Require,
-            pathsLength = require.path.length,
+            pathsLength = Require.path.length,
             path;
 
         if (typeof namespace !== 'string' || namespace === '') {
-            throw new require.Error('Namespace must be non-empty string.');
+            throw new Require.Error('Namespace must be non-empty string.');
         }
 
         if (MODULE_CACHE.hasOwnProperty(namespace)) {
@@ -411,7 +410,7 @@ var require = (function (global) {
         }
 
         if (WRAPPER_CACHE.hasOwnProperty(namespace)) {
-            module = new Module(require, namespace, undefined).init(WRAPPER_CACHE[namespace]);
+            module = new Module(Require, namespace, undefined).init(WRAPPER_CACHE[namespace]);
 
             createNamespace(module);
 
@@ -419,13 +418,13 @@ var require = (function (global) {
         } else if (NSRegExp.test(namespace)) {
 
             while (index < pathsLength) {
-                Module.Exports.prototype = module ? module.exports : require.prototype;
-                path = require.path[index++];
+                Module.Exports.prototype = module ? module.exports : Require.prototype;
+                path = Require.path[index++];
 
                 try {
-                    module = new Module(require, namespace, path);
+                    module = new Module(Require, namespace, path);
                 } catch (error) {
-                    if (error instanceof require.Error) {
+                    if (error instanceof Require.Error) {
                         throw error;
                     }
                 }
@@ -434,14 +433,14 @@ var require = (function (global) {
             if (module) {
                 createNamespace(module);
             } else {
-                throw new require.Error('Cant find module "' + namespace + '" in paths: "' + require.path.join(', ') + '".');
+                throw new Require.Error('Cant find module "' + namespace + '" in paths: "' + Require.path.join(', ') + '".');
             }
         } else {
             try {
-                return new Module(require, undefined, namespace).exports;
+                return new Module(Require, undefined, namespace).exports;
             } catch (error) {
-                if (!(error instanceof require.Error)) {
-                    error = new require('Cant find module in path: "' + namespace + '".');
+                if (!(error instanceof Require.Error)) {
+                    error = new Require('Cant find module in path: "' + namespace + '".');
                 }
 
                 throw error;
@@ -580,7 +579,7 @@ var require = (function (global) {
     }
 
     // Initialization the default namespace
-    Require.setModuleNameSpace('$XM');
+    Require.setModuleNameSpace(Require.namespace);
 
     return Require;
 }());
