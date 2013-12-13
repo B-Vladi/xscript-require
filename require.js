@@ -1,7 +1,7 @@
 /**
  * @file Implementation require for XScript and client-side.
  * @author Vlad Kurkin <b-vladi@yandex-team.ru>
- * @version 1.9
+ * @version 2.0
  * @license <a href="https://github.com/appendto/amplify/blob/master/MIT-LICENSE.txt">MIT</a>
  */
 
