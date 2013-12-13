@@ -88,7 +88,7 @@ var require = (function (global) {
         parent = null,
         undefined;
 
-    global = new Function('return this;')() || global || this;
+    global = new Function('return this;')() || this || global;
     /**
      * Конструктор объекта модуля. Структура создаваемых экземпляров отличается от спецификации CommonJS.
      * @summary <img src="../uml/Module.png" alt="" />
@@ -337,6 +337,7 @@ var require = (function (global) {
      * <b>exports</b> - ссылка на объект {@link Module#exports}.
      * <b>require</b> - ссылка на метод {@link Module#require}.
      * <b>basedir</b> - значение свойства {@link Module#basedir}.
+     * <b>global</b> - глобальный объект окружения (window, global).
      * </pre>
      * @param {String} [source=Module#source] Исходный код модуля.
      * @return {Function} Скомпилированная функция-обертка модуля.
@@ -350,7 +351,7 @@ var require = (function (global) {
         }
 
         try {
-            return new Function('module', 'exports', 'require', 'basedir', this.source);
+            return new Function('module', 'exports', 'require', 'basedir', 'global', this.source);
         } catch (error) {
             throw new this.require.Error('Compilation error module.', error);
         }
@@ -377,7 +378,7 @@ var require = (function (global) {
 
         if (typeof wrapper === 'function') {
             try {
-                wrapper.call(this.exports, this, this.exports, require, this.basedir);
+                wrapper.call(this.exports, this, this.exports, require, this.basedir, global);
             } catch (error) {
                 if (!(error instanceof require.Error)) {
                     error = new require.Error('Cant init module "' + path + '".', error);
@@ -583,7 +584,7 @@ var require = (function (global) {
     Require.setModuleNameSpace('$XM');
 
     return Require;
-}());
+}(this));
 
 /* @startuml
  * "Save module in cache" as SaveInCache -d-> "Create namespace" as NS

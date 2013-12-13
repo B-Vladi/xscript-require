@@ -1,3 +1,5 @@
+###v2.0
+    Added a global variable "global" in the scope of modules.
 ###v1.9
     Added static properties: global, top, namespace, setModuleNameSpace and Error in the require function.
     Initialization namespace on request from the function setModuleNameSpace

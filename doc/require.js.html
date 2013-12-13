@@ -25,7 +25,7 @@
     
     <section>
         <article>
-            <pre class="prettyprint source"><code>/**
+            <pre class="prettyprint source linenums"><code>/**
  * @file Implementation require for XScript and client-side.
  * @author Vlad Kurkin &lt;b-vladi@yandex-team.ru>
  * @version 1.9
@@ -115,7 +115,7 @@ var require = (function (global) {
         parent = null,
         undefined;
 
-    global = new Function('return this;')() || global || this;
+    global = new Function('return this;')() || this || global;
     /**
      * Конструктор объекта модуля. Структура создаваемых экземпляров отличается от спецификации CommonJS.
      * @summary &lt;img src="../uml/Module.png" alt="" />
@@ -364,6 +364,7 @@ var require = (function (global) {
      * &lt;b>exports&lt;/b> - ссылка на объект {@link Module#exports}.
      * &lt;b>require&lt;/b> - ссылка на метод {@link Module#require}.
      * &lt;b>basedir&lt;/b> - значение свойства {@link Module#basedir}.
+     * &lt;b>global&lt;/b> - глобальный объект окружения (window, global).
      * &lt;/pre>
      * @param {String} [source=Module#source] Исходный код модуля.
      * @return {Function} Скомпилированная функция-обертка модуля.
@@ -377,7 +378,7 @@ var require = (function (global) {
         }
 
         try {
-            return new Function('module', 'exports', 'require', 'basedir', this.source);
+            return new Function('module', 'exports', 'require', 'basedir', 'global', this.source);
         } catch (error) {
             throw new this.require.Error('Compilation error module.', error);
         }
@@ -404,7 +405,7 @@ var require = (function (global) {
 
         if (typeof wrapper === 'function') {
             try {
-                wrapper.call(this.exports, this, this.exports, require, this.basedir);
+                wrapper.call(this.exports, this, this.exports, require, this.basedir, global);
             } catch (error) {
                 if (!(error instanceof require.Error)) {
                     error = new require.Error('Cant init module "' + path + '".', error);
@@ -425,12 +426,11 @@ var require = (function (global) {
         var
             module,
             index = 0,
-            require = parent ? parent.require : Require,
-            pathsLength = require.path.length,
+            pathsLength = Require.path.length,
             path;
 
         if (typeof namespace !== 'string' || namespace === '') {
-            throw new require.Error('Namespace must be non-empty string.');
+            throw new Require.Error('Namespace must be non-empty string.');
         }
 
         if (MODULE_CACHE.hasOwnProperty(namespace)) {
@@ -438,7 +438,7 @@ var require = (function (global) {
         }
 
         if (WRAPPER_CACHE.hasOwnProperty(namespace)) {
-            module = new Module(require, namespace, undefined).init(WRAPPER_CACHE[namespace]);
+            module = new Module(Require, namespace, undefined).init(WRAPPER_CACHE[namespace]);
 
             createNamespace(module);
 
@@ -446,13 +446,13 @@ var require = (function (global) {
         } else if (NSRegExp.test(namespace)) {
 
             while (index &lt; pathsLength) {
-                Module.Exports.prototype = module ? module.exports : require.prototype;
-                path = require.path[index++];
+                Module.Exports.prototype = module ? module.exports : Require.prototype;
+                path = Require.path[index++];
 
                 try {
-                    module = new Module(require, namespace, path);
+                    module = new Module(Require, namespace, path);
                 } catch (error) {
-                    if (error instanceof require.Error) {
+                    if (error instanceof Require.Error) {
                         throw error;
                     }
                 }
@@ -461,14 +461,14 @@ var require = (function (global) {
             if (module) {
                 createNamespace(module);
             } else {
-                throw new require.Error('Cant find module "' + namespace + '" in paths: "' + require.path.join(', ') + '".');
+                throw new Require.Error('Cant find module "' + namespace + '" in paths: "' + Require.path.join(', ') + '".');
             }
         } else {
             try {
-                return new Module(require, undefined, namespace).exports;
+                return new Module(Require, undefined, namespace).exports;
             } catch (error) {
-                if (!(error instanceof require.Error)) {
-                    error = new require('Cant find module in path: "' + namespace + '".');
+                if (!(error instanceof Require.Error)) {
+                    error = new Require('Cant find module in path: "' + namespace + '".');
                 }
 
                 throw error;
@@ -607,10 +607,11 @@ var require = (function (global) {
     }
 
     // Initialization the default namespace
-    // Require.setModuleNameSpace(Require.namespace);
+    // !TODO выпилить
+    Require.setModuleNameSpace('$XM');
 
     return Require;
-}());
+}(this));
 
 /* @startuml
  * "Save module in cache" as SaveInCache -d-> "Create namespace" as NS
@@ -759,7 +760,7 @@ var require = (function (global) {
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-dev</a> on Mon Nov 25 2013 16:52:01 GMT+0400 (MSK)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-dev</a> on Fri Dec 13 2013 15:03:03 GMT+0400 (MSK)
 </footer>
 
 <script> prettyPrint(); </script>
