@@ -1,3 +1,5 @@
+###v2.1
+    Fixed a module stack and error handling.
 ###v2.0
     Added a global variable "global" in the scope of modules.
 ###v1.9

@@ -1,7 +1,7 @@
 /**
  * @file Implementation require for XScript and client-side.
  * @author Vlad Kurkin <b-vladi@yandex-team.ru>
- * @version 2.0
+ * @version 2.1
  * @license <a href="https://github.com/appendto/amplify/blob/master/MIT-LICENSE.txt">MIT</a>
  */
 
@@ -380,14 +380,14 @@ var require = (function (global) {
             try {
                 wrapper.call(this.exports, this, this.exports, require, this.basedir, global);
             } catch (error) {
-                if (!(error instanceof require.Error)) {
-                    error = new require.Error('Cant init module "' + path + '".', error);
+                if (!(error instanceof Require.Error)) {
+                    error = new Require.Error('Cant init module "' + path + '".', error);
                 }
 
                 throw error;
             }
         } else {
-            throw new require.Error('Error initializing module.', 'Wrapper is not a function');
+            throw new Require.Error('Error initializing module.', 'Wrapper is not a function');
         }
 
         STACK.pop();
@@ -514,8 +514,6 @@ var require = (function (global) {
             message += ' Reason: "' + error + '".';
         }
 
-        STACK.pop();
-
         if (STACK.length) {
             message += ' Module Stack: "' + STACK.join(', ') + '". ';
         }
@@ -544,7 +542,7 @@ var require = (function (global) {
         Wrapper.setModuleNameSpace = require.setModuleNameSpace;
         Wrapper.global = require.global;
         Wrapper.prototype = require.prototype;
-        Wrapper.Error = require.Error;
+        Wrapper.Error = Require.Error;
         Wrapper.top = Require;
 
         return Wrapper;

@@ -1,6 +1,6 @@
 Implementation require for XScript and client-side
 ===============
-### Version: 2.0
+### Version: 2.1
 
 ### Lisence: [MIT](https://github.com/appendto/amplify/blob/master/MIT-LICENSE.txt)
 
