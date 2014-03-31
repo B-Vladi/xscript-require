@@ -1,3 +1,10 @@
+###v2.2
+    Added "Module#children" property.
+    Renamed "require.prototype" to "require.proto" and "module.prototype" to "module.proto".
+    Renamed "require.global" to "require.cache".
+    Fixed error handling.
+    Update README and JSDoc.
+    Minor fixes.
 ###v2.1
     Fixed a module stack and error handling.
 ###v2.0

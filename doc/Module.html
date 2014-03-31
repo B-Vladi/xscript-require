@@ -39,7 +39,7 @@
     
         
 <dt>
-    <h4 class="name" id="Module"><span class="type-signature">&lt;private> </span>new Module<span class="signature">(require, <span class="optional">namespace</span>, <span class="optional">path</span>)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="Module"><span class="type-signature">&lt;private> </span>new Module<span class="signature">(<span class="optional">namespace</span>, <span class="optional">path</span>)</span><span class="type-signature"></span></h4>
     
     
     <p class="summary"><img src="../uml/Module.png" alt="" /></p>
@@ -83,41 +83,6 @@
 	</thead>
 	
 	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>require</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">function</span>
-
-
-            
-            </td>
-            
-            
-                <td class="attributes">
-                
-                    
-                
-                    
-                
-                </td>
-            
-            
-            
-                <td class="default">
-                
-                </td>
-            
-            
-            <td class="description last">Пространство имен модуля.</td>
-        </tr>
-	
 	
 	
         <tr>
@@ -224,7 +189,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="require.js.html">require.js</a>, <a href="require.js.html#line92">line 92</a>
+        <a href="require.js.html">require.js</a>, <a href="require.js.html#line93">line 93</a>
     </li></ul></dd>
     
     
@@ -260,7 +225,7 @@
             </dt>
             <dd>
                 
-<span class="param-type">Require.Error</span>
+<span class="param-type">require.Error</span>
 
 
             </dd>
@@ -293,6 +258,70 @@
         <h3 class="subsection-title">Members</h3>
         
         <dl>
+            
+<dt>
+    <h4 class="name" id="Exports"><span class="type-signature">&lt;static> </span>Exports<span class="type-signature"> :Exports</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        Конструктор объекта <a href="Module.html#exports">Module#exports</a>.
+    </div>
+    
+    
+    
+        <h5>Type:</h5>
+        <ul>
+            <li>
+                
+<span class="param-type">Exports</span>
+
+
+            </li>
+        </ul>
+    
+
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="require.js.html">require.js</a>, <a href="require.js.html#line229">line 229</a>
+    </li></ul></dd>
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+</dd>
+
+        
             
 <dt>
     <h4 class="name" id="basedir"><span class="type-signature"></span>basedir<span class="type-signature"> :String</span></h4>
@@ -346,7 +375,74 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="require.js.html">require.js</a>, <a href="require.js.html#line189">line 189</a>
+        <a href="require.js.html">require.js</a>, <a href="require.js.html#line199">line 199</a>
+    </li></ul></dd>
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="children"><span class="type-signature"></span>children<span class="type-signature"> :Array</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        Массив модулей, загруженный из текущего модуля.
+    </div>
+    
+    
+    
+        <h5>Type:</h5>
+        <ul>
+            <li>
+                
+<span class="param-type">Array</span>
+
+
+            </li>
+        </ul>
+    
+
+    
+<dl class="details">
+    
+        
+    
+    
+    
+    <dt class="tag-since">Since:</dt>
+    <dd class="tag-since"><ul class="dummy"><li>2.2</dd>
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="require.js.html">require.js</a>, <a href="require.js.html#line166">line 166</a>
     </li></ul></dd>
     
     
@@ -371,7 +467,7 @@
 <dd>
     
     <div class="description">
-        Реализация модуля, являющаяся его внешним API. По-умолчанию этот объект наследует от <a href="Module.html#prototype">Module#prototype</a>. Для того, что бы разорвать наследование между уровнями переопределения, достаточно заменить значение этого свойства (см. диаграмму наследования).
+        Реализация модуля, являющаяся его внешним API. По-умолчанию этот объект наследует от <a href="Module.html#proto">Module#proto</a>. Для того, что бы разорвать наследование между уровнями переопределения, достаточно заменить значение этого свойства (см. диаграмму наследования).
     </div>
     
     
@@ -410,7 +506,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="require.js.html">require.js</a>, <a href="require.js.html#line112">line 112</a>
+        <a href="require.js.html">require.js</a>, <a href="require.js.html#line114">line 114</a>
     </li></ul></dd>
     
     
@@ -482,7 +578,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="require.js.html">require.js</a>, <a href="require.js.html#line180">line 180</a>
+        <a href="require.js.html">require.js</a>, <a href="require.js.html#line190">line 190</a>
     </li></ul></dd>
     
     
@@ -554,7 +650,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="require.js.html">require.js</a>, <a href="require.js.html#line197">line 197</a>
+        <a href="require.js.html">require.js</a>, <a href="require.js.html#line207">line 207</a>
     </li></ul></dd>
     
     
@@ -623,7 +719,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="require.js.html">require.js</a>, <a href="require.js.html#line141">line 141</a>
+        <a href="require.js.html">require.js</a>, <a href="require.js.html#line143">line 143</a>
     </li></ul></dd>
     
     
@@ -692,7 +788,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="require.js.html">require.js</a>, <a href="require.js.html#line133">line 133</a>
+        <a href="require.js.html">require.js</a>, <a href="require.js.html#line135">line 135</a>
     </li></ul></dd>
     
     
@@ -761,7 +857,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="require.js.html">require.js</a>, <a href="require.js.html#line149">line 149</a>
+        <a href="require.js.html">require.js</a>, <a href="require.js.html#line151">line 151</a>
     </li></ul></dd>
     
     
@@ -840,7 +936,7 @@ module.parent.exports.foo // bar</code></pre>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="require.js.html">require.js</a>, <a href="require.js.html#line172">line 172</a>
+        <a href="require.js.html">require.js</a>, <a href="require.js.html#line182">line 182</a>
     </li></ul></dd>
     
     
@@ -858,14 +954,14 @@ module.parent.exports.foo // bar</code></pre>
         
             
 <dt>
-    <h4 class="name" id="prototype"><span class="type-signature"></span>prototype<span class="type-signature"> :Object</span></h4>
+    <h4 class="name" id="proto"><span class="type-signature"></span>proto<span class="type-signature"> :Object</span></h4>
     
     
 </dt>
 <dd>
     
     <div class="description">
-        Ссылка на прототип объекта <a href="Module.html#exports">Module#exports</a>. Концом цепочки наследования является <a href="global.html#require">require</a>.prototype, если не было переопределено свойство <a href="Module.html#exports">Module#exports</a> на каком-либо уровне переопределения.
+        Ссылка на прототип объекта <a href="Module.html#exports">Module#exports</a>. Концом цепочки наследования является <a href="global.html#require">require</a>.proto, если не было переопределено свойство <a href="Module.html#exports">Module#exports</a> на каком-либо уровне переопределения.
     </div>
     
     
@@ -904,7 +1000,7 @@ module.parent.exports.foo // bar</code></pre>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="require.js.html">require.js</a>, <a href="require.js.html#line119">line 119</a>
+        <a href="require.js.html">require.js</a>, <a href="require.js.html#line121">line 121</a>
     </li></ul></dd>
     
     
@@ -923,7 +1019,7 @@ module.parent.exports.foo // bar</code></pre>
 // Перекрытие наследуемого метода.
 this.log = function (string) {
   // Вызов исходного метода
-  return module.prototype.log('[LOG]: ' + string);
+  return module.proto.log('[LOG]: ' + string);
 }</code></pre>
 
     
@@ -983,7 +1079,7 @@ this.log = function (string) {
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="require.js.html">require.js</a>, <a href="require.js.html#line164">line 164</a>
+        <a href="require.js.html">require.js</a>, <a href="require.js.html#line174">line 174</a>
     </li></ul></dd>
     
     
@@ -1028,6 +1124,9 @@ this.log = function (string) {
 
     
     
+    
+        <h5>This:</h5>
+        <ul><li><a href="Module.html">Module</a></li></ul>
     
     
     
@@ -1123,7 +1222,7 @@ this.log = function (string) {
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="require.js.html">require.js</a>, <a href="require.js.html#line333">line 333</a>
+        <a href="require.js.html">require.js</a>, <a href="require.js.html#line364">line 364</a>
     </li></ul></dd>
     
     
@@ -1159,7 +1258,7 @@ this.log = function (string) {
             </dt>
             <dd>
                 
-<span class="param-type">Require.Error</span>
+<span class="param-type">require.Error</span>
 
 
             </dd>
@@ -1214,6 +1313,9 @@ this.log = function (string) {
 
     
     
+    
+        <h5>This:</h5>
+        <ul><li><a href="Module.html">Module</a></li></ul>
     
     
     
@@ -1273,9 +1375,6 @@ this.log = function (string) {
     
     
     
-    <dt class="tag-since">Since:</dt>
-    <dd class="tag-since"><ul class="dummy"><li>1.6</dd>
-    
 
     
     
@@ -1292,7 +1391,7 @@ this.log = function (string) {
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="require.js.html">require.js</a>, <a href="require.js.html#line360">line 360</a>
+        <a href="require.js.html">require.js</a>, <a href="require.js.html#line384">line 384</a>
     </li></ul></dd>
     
     
@@ -1328,7 +1427,7 @@ this.log = function (string) {
             </dt>
             <dd>
                 
-<span class="param-type">Require.Error</span>
+<span class="param-type">require.Error</span>
 
 
             </dd>
@@ -1378,14 +1477,14 @@ this.log = function (string) {
     
     <div class="description">
         Загружает код модуля из папки dir на серверной стороне. Поиск кода осуществляется последовательно в местах:
-<br /><br />
+
 Если модуль имеет пространство имён:
-<ol>
+<ul>
   <li>Ищется папка с именем пространства имён.</li>
   <li>Если папка найдена, в ней ищется JSON-файл с именем, указанным в <a href="global.html#require">require</a>.packageName.</li>
   <li>Если JSON-файл найден и в нем определено свойство main с именем входного файла, ищется указанный файл в текущей папке.</li>
   <li>Если JSON-файл отсутствует, в текущей папке ищется файл, имя которого совпадает с пространством имен модуля с расширением, указанным в <a href="global.html#require">require</a>.extension.</li>
-</ol>
+</ul>
 Если пространство имен не указано, код загружается по указанному пути.
 <br /><br />Таким образом, файловая структура модуля c установленным namespace может представлять собой (в порядке приоритета):
 <ol>
@@ -1404,6 +1503,9 @@ this.log = function (string) {
 
     
     
+    
+        <h5>This:</h5>
+        <ul><li><a href="Module.html">Module</a></li></ul>
     
     
     
@@ -1479,7 +1581,7 @@ this.log = function (string) {
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="require.js.html">require.js</a>, <a href="require.js.html#line215">line 215</a>
+        <a href="require.js.html">require.js</a>, <a href="require.js.html#line260">line 260</a>
     </li></ul></dd>
     
     
@@ -1518,7 +1620,7 @@ this.log = function (string) {
 <span class="param-type">Error</span>
 |
 
-<span class="param-type">Require.Error</span>
+<span class="param-type">require.Error</span>
 
 
             </dd>
@@ -1644,7 +1746,7 @@ this.log = function (string) {
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="require.js.html">require.js</a>, <a href="require.js.html#line104">line 104</a>
+        <a href="require.js.html">require.js</a>, <a href="require.js.html#line106">line 106</a>
     </li></ul></dd>
     
     
@@ -1685,13 +1787,13 @@ this.log = function (string) {
 </div>
 
 <nav>
-    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="Module.html">Module</a></li></ul><h3>Namespaces</h3><ul><li><a href="$XM.html">$XM</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-CHANGELOG.html">CHANGELOG</a></li><li><a href="tutorial-README.html">README</a></li></ul><h3>Global</h3><ul><li><a href="global.html#require">require</a></li></ul>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="Module.html">Module</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-CHANGELOG.html">CHANGELOG</a></li><li><a href="tutorial-README.html">README</a></li></ul><h3>Global</h3><ul><li><a href="global.html#require">require</a></li></ul>
 </nav>
 
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.3-dev</a> on Mon Feb 03 2014 17:35:47 GMT+0400 (MSK)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.3-dev</a> on Wed Mar 12 2014 19:30:28 GMT+0400 (MSK)
 </footer>
 
 <script> prettyPrint(); </script>

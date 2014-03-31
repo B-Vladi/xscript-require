@@ -1,6 +1,6 @@
 Implementation require for XScript and client-side
 ===============
-### Version: 2.1
+### Version: 2.2
 
 ### Lisence: [MIT](https://github.com/appendto/amplify/blob/master/MIT-LICENSE.txt)
 
@@ -26,16 +26,16 @@ Implementation require for XScript and client-side
 ####Доступ к модулям из глобального пространства имен:
 
     require('some.name.space');
-    $XM.some.name.space; // TypeError: объект $XM не найден в глобальном объекте.
+    XM.some.name.space; // TypeError: объект XM не найден в глобальном объекте.
 
 Имя можно регистрировать и после вызова require
 
-    require.setModuleNameSpace('$XM');
-    $XM.some.name.space; // объект {Module#exports}.
+    require.setModuleNameSpace('XM');
+    XM.some.name.space; // объект {Module#exports}.
 
 ####Регистрация модуля в браузере:
 
-    require.define('name.space', function (module, exports, require, basedir) {
+    require.define('name.space', function (module, exports, require, basedir, global) {
         // Тело модуля
     });
 
